@@ -110,14 +110,17 @@
 									</span>
 									<button
 										type="button"
-										class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+										class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
 										class:bg-green-600={goal.is_minimum}
 										on:click={() => toggleMinimum(goal.nutrient_id)}
+										aria-label={goal.is_minimum
+											? `Set ${goal.name} to maximum`
+											: `Set ${goal.name} to minimum`}
 									>
 										<span
-											class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+											class="pointer-events-none inline-block h-5 w-5 translate-x-0 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
 											class:translate-x-5={goal.is_minimum}
-										/>
+										></span>
 									</button>
 								</div>
 							</label>
@@ -139,14 +142,14 @@
 				<div class="mt-5 flex justify-end space-x-3">
 					<button
 						type="button"
-						class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+						class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
 						on:click={closeModal}
 					>
 						Cancel
 					</button>
 					<button
 						type="button"
-						class="rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+						class="rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
 						on:click={saveGoals}
 					>
 						Save Goals
