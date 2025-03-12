@@ -9,7 +9,16 @@
 	// Get user data from the server
 	$: userName = data.user?.name || 'User';
 	$: foodLogs = data.foodLogs || [];
+	$: todayLogs = data.todayLogs || [];
+	$: today = data.today ? new Date(data.today).toISOString().split('T')[0] : '';
+
+	// Get today's nutrition data - resets at the end of each day
 	$: totalSugar = data.totalSugar || 0;
+	$: totalCarbs = data.totalCarbs || 0;
+	$: totalProtein = data.totalProtein || 0;
+	$: totalFat = data.totalFat || 0;
+	$: totalFiber = data.totalFiber || 0;
+
 	$: sugarGoal = data.sugarGoal || 25;
 	$: sugarPercentage = Math.round((totalSugar / sugarGoal) * 100);
 	$: sugarExceeded = totalSugar > sugarGoal;
@@ -18,13 +27,7 @@
 	$: mealsByDate = groupMealsByDate(foodLogs);
 	$: recentDates = [...Object.keys(mealsByDate)].sort((a, b) => new Date(b) - new Date(a));
 
-	// Additional nutrient tracking
-	$: totalCarbs = calculateNutrientTotal(foodLogs, 2);
-	$: totalProtein = calculateNutrientTotal(foodLogs, 3);
-	$: totalFat = calculateNutrientTotal(foodLogs, 4);
-	$: totalFiber = calculateNutrientTotal(foodLogs, 5);
-
-	// Formatted nutrient data for display
+	// Formatted nutrient data for display - uses today's values which reset daily
 	$: nutritionData = [
 		{
 			name: 'Sugar',
@@ -122,7 +125,8 @@
 
 		meals.forEach((meal) => {
 			const date = new Date(meal.consumed_at);
-			const dateStr = date.toLocaleDateString();
+			// Use ISO format date string (YYYY-MM-DD) for consistent storage
+			const dateStr = date.toISOString().split('T')[0];
 
 			if (!groups[dateStr]) {
 				groups[dateStr] = [];
@@ -164,7 +168,8 @@
 	}
 
 	function formatDate(dateStr) {
-		const date = new Date(dateStr);
+		// Create date from ISO format string (YYYY-MM-DD)
+		const date = new Date(dateStr + 'T00:00:00');
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 
@@ -176,11 +181,13 @@
 		} else if (date.toDateString() === yesterday.toDateString()) {
 			return 'Yesterday';
 		} else {
-			return date.toLocaleDateString('en-US', {
-				weekday: 'short',
-				month: 'short',
-				day: 'numeric'
-			});
+			// Explicitly format with separate day and month to avoid confusion
+			const month = date.toLocaleString('en-US', { month: 'short' });
+			const day = date.getDate();
+			const weekday = date.toLocaleString('en-US', { weekday: 'short' });
+			const year = date.getFullYear() !== today.getFullYear() ? `, ${date.getFullYear()}` : '';
+
+			return `${weekday}, ${month} ${day}${year}`;
 		}
 	}
 </script>
@@ -195,7 +202,7 @@
 
 		<!-- Sugar Tracker Card -->
 		<div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-			<!-- Daily Sugar Intake -->
+			<!-- Daily Sugar Intake - Now resets each day -->
 			<div class="rounded-lg bg-white p-6 shadow">
 				<h2 class="mb-4 text-xl font-semibold text-gray-800">Today's Sugar</h2>
 				<div class="mb-2 flex items-end">
@@ -247,9 +254,12 @@
 			</div>
 		</div>
 
-		<!-- Nutrition Breakdown -->
+		<!-- Nutrition Breakdown - Now shows today's values only -->
 		<div class="mb-8 overflow-x-auto rounded-lg bg-white p-6 shadow">
-			<h2 class="mb-4 text-xl font-semibold text-gray-800">Nutrition Breakdown</h2>
+			<div class="mb-4 flex items-center justify-between">
+				<h2 class="text-xl font-semibold text-gray-800">Nutrition Breakdown</h2>
+				<div class="text-sm font-medium text-green-600">Resets daily at midnight</div>
+			</div>
 			<div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
 				{#each nutritionData as item}
 					<div class="rounded-md border border-gray-200 p-4">

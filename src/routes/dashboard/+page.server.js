@@ -104,7 +104,7 @@ export async function load({ cookies, fetch }) {
 			return logDate >= today && logDate < tomorrow;
 		});
 
-		// Calculate daily nutrient totals
+		// Calculate daily nutrient totals (based strictly on today's logs)
 		const totalSugar = calculateNutrientTotal(todayLogs, 1);
 		const totalCarbs = calculateNutrientTotal(todayLogs, 2);
 		const totalProtein = calculateNutrientTotal(todayLogs, 3);
@@ -133,13 +133,15 @@ export async function load({ cookies, fetch }) {
 			user: userResult.rows[0],
 			isAuthenticated: true,
 			foodLogs,
+			todayLogs, // Add today's logs explicitly
 			totalSugar,
 			totalCarbs,
 			totalProtein,
 			totalFat,
 			totalFiber,
 			sugarGoal,
-			goals: goalsResult.rows
+			goals: goalsResult.rows,
+			today: today.toISOString() // Send today's date to frontend
 		};
 	} catch (error) {
 		console.error('Error fetching dashboard data:', error);
