@@ -122,7 +122,7 @@ async function getFoodDetails(fdcId, fetch) {
 
 		// Use direct USDA API call instead of internal API
 		const url = `${API_BASE_URL}/food/${fdcId}?${params.toString()}`;
-		console.log('Details URL:', url.replace(USDA_API_KEY, '[HIDDEN]'));
+		// console.log('Details URL:', url.replace(USDA_API_KEY, '[HIDDEN]'));
 
 		const response = await fetch(url, {
 			method: 'GET',
@@ -143,7 +143,7 @@ async function getFoodDetails(fdcId, fetch) {
 		}
 
 		const data = await response.json();
-		console.log('Food Details Response:', JSON.stringify(data).slice(0, 200) + '...');
+		// console.log('Food Details Response:', JSON.stringify(data).slice(0, 200) + '...');
 		return data;
 	} catch (error) {
 		console.error('USDA API Error:', error);

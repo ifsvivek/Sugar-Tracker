@@ -27,7 +27,7 @@ export async function POST({ request, cookies, fetch }) {
 		});
 
 		const url = `${API_BASE_URL}/foods/search?${params.toString()}`;
-		console.log('Search URL:', url.replace(USDA_API_KEY, '[HIDDEN]'));
+		// console.log('Search URL:', url.replace(USDA_API_KEY, '[HIDDEN]'));
 
 		const response = await fetch(url);
 

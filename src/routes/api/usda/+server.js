@@ -50,7 +50,7 @@ async function searchFoods(query, pageSize, pageNumber) {
 		});
 
 		const url = `${API_BASE_URL}/foods/search?api_key=${USDA_API_KEY}&${params.toString()}`;
-		console.log('Search URL:', url.replace(USDA_API_KEY, '[HIDDEN]'));
+		// console.log('Search URL:', url.replace(USDA_API_KEY, '[HIDDEN]'));
 
 		// Use GET method for the search endpoint
 		const response = await fetch(url);
@@ -62,7 +62,7 @@ async function searchFoods(query, pageSize, pageNumber) {
 		}
 
 		const data = await response.json();
-		console.log('USDA API Response:', JSON.stringify(data).slice(0, 200) + '...');
+		// console.log('USDA API Response:', JSON.stringify(data).slice(0, 200) + '...');
 		return data;
 	} catch (error) {
 		console.error('USDA API Error:', error);
@@ -83,7 +83,7 @@ async function getFoodDetails(fdcId) {
 
 		// Fix the URL format to match the working pattern
 		const url = `${API_BASE_URL}/food/${fdcId}?${params.toString()}`;
-		console.log('Details URL:', url.replace(USDA_API_KEY, '[HIDDEN]'));
+		// console.log('Details URL:', url.replace(USDA_API_KEY, '[HIDDEN]'));
 
 		const response = await fetch(url, {
 			method: 'GET',
@@ -104,7 +104,7 @@ async function getFoodDetails(fdcId) {
 		}
 
 		const data = await response.json();
-		console.log('Food Details Response:', JSON.stringify(data).slice(0, 200) + '...');
+		// console.log('Food Details Response:', JSON.stringify(data).slice(0, 200) + '...');
 		return data;
 	} catch (error) {
 		console.error('USDA API Error:', error);
