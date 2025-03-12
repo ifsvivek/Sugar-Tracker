@@ -2,7 +2,12 @@
 	/** @type {import('./$types').PageData} */
 	export let data;
 
-	import { FoodSearchModal, FoodLogForm } from '$components';
+	import {
+		FoodSearchModal,
+		FoodLogForm,
+		GoalSettingsModal,
+		DeleteConfirmationModal
+	} from '$components';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
@@ -11,6 +16,7 @@
 	$: foodLogs = data.foodLogs || [];
 	$: todayLogs = data.todayLogs || [];
 	$: today = data.today ? new Date(data.today).toISOString().split('T')[0] : '';
+	$: goals = data.goals || [];
 
 	// Get today's nutrition data - resets at the end of each day
 	$: totalSugar = data.totalSugar || 0;
@@ -27,48 +33,54 @@
 	$: mealsByDate = groupMealsByDate(foodLogs);
 	$: recentDates = [...Object.keys(mealsByDate)].sort((a, b) => new Date(b) - new Date(a));
 
-	// Formatted nutrient data for display - uses today's values which reset daily
+	// Calculate nutrient percentages based on goals
 	$: nutritionData = [
 		{
+			id: 1,
 			name: 'Sugar',
 			value: `${totalSugar}g`,
 			goal: `${sugarGoal}g`,
-			percentage: sugarPercentage,
+			percentage: Math.round((totalSugar / sugarGoal) * 100),
 			exceeded: totalSugar > sugarGoal
 		},
 		{
+			id: 2,
 			name: 'Carbs',
 			value: `${totalCarbs}g`,
-			goal: '150g',
-			percentage: Math.round((totalCarbs / 150) * 100),
-			exceeded: totalCarbs > 150
+			goal: getGoalForNutrient(2, 150),
+			percentage: Math.round((totalCarbs / getGoalAmountForNutrient(2, 150)) * 100),
+			exceeded: isGoalExceeded(2, totalCarbs)
 		},
 		{
+			id: 3,
 			name: 'Protein',
 			value: `${totalProtein}g`,
-			goal: '60g',
-			percentage: Math.round((totalProtein / 60) * 100),
-			exceeded: totalProtein > 60
+			goal: getGoalForNutrient(3, 60),
+			percentage: Math.round((totalProtein / getGoalAmountForNutrient(3, 60)) * 100),
+			exceeded: isGoalExceeded(3, totalProtein)
 		},
 		{
+			id: 4,
 			name: 'Fat',
 			value: `${totalFat}g`,
-			goal: '50g',
-			percentage: Math.round((totalFat / 50) * 100),
-			exceeded: totalFat > 50
+			goal: getGoalForNutrient(4, 50),
+			percentage: Math.round((totalFat / getGoalAmountForNutrient(4, 50)) * 100),
+			exceeded: isGoalExceeded(4, totalFat)
 		},
 		{
+			id: 5,
 			name: 'Fiber',
 			value: `${totalFiber}g`,
-			goal: '25g',
-			percentage: Math.round((totalFiber / 25) * 100),
-			exceeded: totalFiber > 25
+			goal: getGoalForNutrient(5, 25),
+			percentage: Math.round((totalFiber / getGoalAmountForNutrient(5, 25)) * 100),
+			exceeded: isGoalExceeded(5, totalFiber)
 		}
 	];
 
 	// Modals state
 	let isSearchModalOpen = false;
 	let isFoodLogFormOpen = false;
+	let isGoalSettingsModalOpen = false;
 	let selectedFood = null;
 	let isDeleteConfirmOpen = false;
 	let mealToDelete = null;
@@ -117,6 +129,49 @@
 	function cancelDelete() {
 		isDeleteConfirmOpen = false;
 		mealToDelete = null;
+	}
+
+	function openGoalSettings() {
+		isGoalSettingsModalOpen = true;
+	}
+
+	function handleGoalSuccess() {
+		window.location.reload();
+	}
+
+	// Helper functions for nutrition goals
+	function getGoalForNutrient(nutrientId, defaultAmount) {
+		const goal = goals.find((g) => g.nutrient_id === nutrientId);
+		return goal ? `${goal.target_amount}${goal.unit}` : `${defaultAmount}g`;
+	}
+
+	function getGoalAmountForNutrient(nutrientId, defaultAmount) {
+		const goal = goals.find((g) => g.nutrient_id === nutrientId);
+		return goal ? goal.target_amount : defaultAmount;
+	}
+
+	function isGoalExceeded(nutrientId, amount) {
+		const goal = goals.find((g) => g.nutrient_id === nutrientId);
+		if (!goal) return amount > getDefaultGoalForNutrient(nutrientId);
+
+		// If it's a minimum goal, we only exceed if below the target
+		if (goal.is_minimum) {
+			return amount < goal.target_amount;
+		}
+
+		// Otherwise it's a maximum goal
+		return amount > goal.target_amount;
+	}
+
+	function getDefaultGoalForNutrient(nutrientId) {
+		const defaultValues = {
+			1: 25, // Sugar
+			2: 150, // Carbs
+			3: 60, // Protein
+			4: 50, // Fat
+			5: 25 // Fiber
+		};
+		return defaultValues[nutrientId] || 0;
 	}
 
 	// Helper functions
@@ -238,6 +293,7 @@
 					</button>
 					<button
 						class="focus:ring-opacity-50 flex-1 rounded border border-green-600 px-4 py-2 text-green-600 hover:bg-green-50 focus:ring-2 focus:ring-green-500 focus:outline-none"
+						on:click={openGoalSettings}
 					>
 						Add Goal
 					</button>
@@ -371,6 +427,7 @@
 											<button
 												class="text-red-600 hover:text-red-800"
 												on:click={() => confirmDeleteMeal(meal)}
+												aria-label="Delete meal"
 											>
 												<svg
 													xmlns="http://www.w3.org/2000/svg"
@@ -442,52 +499,20 @@
 	on:success={handleLogSuccess}
 />
 
-<!-- Delete Confirmation Modal -->
-{#if isDeleteConfirmOpen}
-	<div class="fixed inset-0 z-50 overflow-y-auto">
-		<div class="flex min-h-screen items-center justify-center px-4 text-center">
-			<div
-				class="bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity"
-				on:click={cancelDelete}
-			></div>
+<!-- Goal Settings Modal -->
+<GoalSettingsModal
+	isOpen={isGoalSettingsModalOpen}
+	currentGoals={goals}
+	on:close={() => (isGoalSettingsModalOpen = false)}
+	on:success={handleGoalSuccess}
+/>
 
-			<div
-				class="inline-block w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all"
-			>
-				<div class="mb-4">
-					<h3 class="text-lg font-medium text-gray-900">Delete Food Log</h3>
-					<p class="mt-2 text-sm text-gray-500">
-						Are you sure you want to delete this food log? This action cannot be undone.
-					</p>
-					{#if mealToDelete}
-						<div class="mt-3 rounded-md bg-gray-50 p-3">
-							<p class="font-medium">{mealToDelete.food}</p>
-							<p class="text-sm text-gray-500">
-								{mealToDelete.name} at {mealToDelete.time} - {mealToDelete.servingSize} serving(s)
-							</p>
-						</div>
-					{/if}
-				</div>
-
-				<div class="mt-5 flex justify-end space-x-3">
-					<button
-						type="button"
-						class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
-						on:click={cancelDelete}
-						disabled={isDeleting}
-					>
-						Cancel
-					</button>
-					<button
-						type="button"
-						class="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
-						on:click={deleteMeal}
-						disabled={isDeleting}
-					>
-						{isDeleting ? 'Deleting...' : 'Delete'}
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}
+<!-- Use the DeleteConfirmationModal component instead of inline modal -->
+<DeleteConfirmationModal
+	isOpen={isDeleteConfirmOpen}
+	item={mealToDelete}
+	{isDeleting}
+	title="Delete Food Log"
+	on:cancel={cancelDelete}
+	on:confirm={deleteMeal}
+/>
