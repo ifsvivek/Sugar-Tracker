@@ -195,9 +195,7 @@
 							/>
 						</svg>
 						<p class="text-gray-600">Search for foods to add to your log</p>
-						<p class="mt-1 text-sm text-gray-500">
-							Try searching for things like "apple" or "chicken breast"
-						</p>
+						<p class="mt-1 text-sm text-gray-500">Try searching for a food item or brand name</p>
 					</div>
 				{/if}
 			</div>
