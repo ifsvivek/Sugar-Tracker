@@ -1,149 +1,156 @@
 # Sugar Tracker
 
-A web application for tracking sugar and nutrient intake, built with SvelteKit and Neon Database.
+A modern web application to help users monitor and manage their daily sugar intake.
+
+## Overview
+
+Sugar Tracker is a feature-rich application built with Svelte that allows users to:
+
+- Track daily sugar and nutrient consumption
+- Set personalized nutrition goals
+- Search for food items using USDA FoodData Central API
+- Visualize eating habits with interactive charts
+- Monitor progress with weekly and monthly trends
 
 ## Features
 
-- **Comprehensive Nutrient Tracking**: Monitor sugar, carbohydrates, proteins, fats, vitamins, and minerals
-- **User-Friendly Food Logging**: Quickly search and log foods from the extensive USDA database
-- **Personalized Dashboard**: View your nutrition trends with intuitive charts and visualizations
-- **Goal Setting**: Set and track custom nutrition goals
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- **User Authentication**: Secure login and registration system
+- **Food Logging**: Search and log foods with their nutritional data
+- **Dashboard**: Real-time nutritional overview with insights
+- **Goal Setting**: Set and track nutrition goals
+- **Data Visualization**: Interactive charts showing consumption trends
+- **Mobile Responsive**: Fully responsive design for all devices
+- **Personalized Recommendations**: Tips based on consumption patterns
+- **Weekly & Monthly Reports**: Track your progress over time
+- **Multi-nutrient Tracking**: Monitor carbs, proteins, fats, and fiber alongside sugar
 
 ## Tech Stack
 
-- **Frontend**: Svelte and TailwindCSS
-- **Database**: [Neon Database](https://neon.tech/) (Serverless PostgreSQL)
-- **API**: [USDA FoodData Central API](https://fdc.nal.usda.gov/api-guide.html)
-- **Authentication**: JWT-based authentication
+- **Frontend**: Svelte, TailwindCSS
+- **Backend**: SvelteKit with endpoints
+- **Database**: PostgreSQL
+- **API Integration**: USDA FoodData Central API
+- **Visualization**: Chart.js
+- **Authentication**: JWT (JSON Web Tokens)
+- **Deployment**: Vercel
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v16+)
-- npm or yarn
-- USDA API Key (get it from [FoodData Central](https://fdc.nal.usda.gov/api-key-signup.html))
-- Neon Database account
+- Node.js (v16 or higher)
+- PostgreSQL
+- USDA FoodData Central API key (obtain from [https://fdc.nal.usda.gov/api-key-signup.html](https://fdc.nal.usda.gov/api-key-signup.html))
 
 ### Installation
 
-1. Clone the repository:
+1. Clone the repository
 
-   ```bash
-   git clone https://github.com/yourusername/sugar-tracker.git
-   cd sugar-tracker
-   ```
+```bash
+git clone https://github.com/yourusername/sugar-tracker.git
+cd sugar-tracker
+```
 
-2. Install dependencies:
+2. Install dependencies
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-3. Create a `.env` file in the project root with the following:
-
-   ```
-   USDA_API_KEY=your_usda_api_key
-   DATABASE_URL=your_neon_database_connection_string
-   JWT_SECRET=your_jwt_secret
-   ```
-
-4. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-5. Open http://localhost:5173 in your browser
-
-### Database Setup
-
-The application uses Neon Database for serverless PostgreSQL:
-
-1. Create an account at [Neon](https://neon.tech/)
-2. Create a new project and get your connection string
-3. Add the connection string to your `.env` file
-4. Run the database initialization script:
-   ```bash
-   npm run setup-db
-   ```
-
-## Database Connection
-
-This application uses the `@neondatabase/serverless` package with connection pooling to optimize database performance.
-
-### Benefits of Connection Pooling:
-
-1. **Improved Performance**: Reuses connections instead of creating new ones for each query
-2. **Resource Efficiency**: Reduces the overhead of establishing connections
-3. **Scalability**: Handles multiple concurrent requests better
-4. **Connection Management**: Automatically manages connections lifecycle
-
-### Implementation:
-
-The database connection is established in `src/lib/db.js` using a connection pool. Each database operation:
-
-1. Acquires a client from the pool
-2. Executes the query
-3. Releases the client back to the pool
-
-### Environment Variables:
-
-Create a `.env` file with the following variables:
+3. Create a .env file in the root directory with the following variables:
 
 ```
-DATABASE_URL=postgres://username:password@your-neon-db-url/database
-JWT_SECRET=your-secret-key-here
+POSTGRES_URL=postgresql://username:password@localhost:5432/sugar_tracker
+USDA_API_KEY=your_api_key_here
+JWT_SECRET=your_secret_key
 ```
+
+4. Set up the database
+
+```bash
+psql -U postgres -f schema.sql
+```
+
+5. Start the development server
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:5173` in your browser to see the application.
 
 ## Project Structure
 
 ```
 sugar-tracker/
 ├── src/
-│   ├── components/      # Reusable Svelte components
-│   ├── routes/          # Application pages/routes
-│   ├── lib/             # Utility functions and shared code
-│   ├── stores/          # Svelte stores for state management
-│   └── services/        # API and database service interfaces
-├── static/              # Static assets
-├── tests/               # Test files
-├── .env                 # Environment variables (not committed)
-└── ...config files
+│   ├── components/           # Reusable UI components
+│   │   ├── dashboard/        # Dashboard-specific components
+│   │   │   └── charts/       # Chart components for data visualization
+│   ├── lib/                  # Library code & utilities
+│   │   ├── api/              # API interaction helpers
+│   │   ├── auth/             # Authentication utilities
+│   │   ├── db/               # Database utilities
+│   │   └── utils/            # Helper functions
+│   ├── routes/               # SvelteKit routes
+│   │   ├── api/              # API endpoints
+│   │   │   ├── auth/         # Authentication endpoints
+│   │   │   ├── foods/        # Food & nutrition endpoints
+│   │   │   └── goals/        # Nutrition goals endpoints
+│   │   ├── dashboard/        # Dashboard pages
+│   │   ├── login/            # Authentication pages
+│   │   └── register/         # Registration pages
+│   └── app.html              # Main HTML template
+├── static/                   # Static assets
+├── schema.sql                # Database schema
+└── package.json              # Project dependencies
 ```
 
-## Development
+## Development Guidelines
 
-```bash
-# Install dependencies
-npm install
+### Component Structure
 
-# Start development server
-npm run dev
+Components follow a modular structure with clear separation of concerns:
 
-# Build for production
-npm run build
-```
+- Presentation components focus on UI display
+- Container components handle data and business logic
+- Utility functions keep logic reusable and testable
 
-## Authentication
+### Naming Conventions
 
-The application uses JWT (JSON Web Tokens) for authentication. Tokens are stored in HTTP-only cookies for security.
+- Components: PascalCase (e.g., `FoodLogForm.svelte`)
+- Functions, variables: camelCase (e.g., `calculateNutrientTotal`)
+- Database tables: snake_case (e.g., `food_logs`)
 
-## Contributing
+### CSS Styling
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Tailwind CSS is used for styling with some custom utilities defined in `app.css`.
 
-## License
+## Deployment
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Vercel Deployment
+
+1. Connect your GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy with default SvelteKit settings
+
+### Database Setup
+
+1. Create PostgreSQL database in your preferred hosting (e.g., Vercel Postgres)
+2. Run schema migration using the provided `schema.sql`
+3. Update the `POSTGRES_URL` environment variable
+
+## Usage
+
+1. Create an account or log in
+2. Set your daily nutrition goals
+3. Search for and log foods you consume
+4. View your progress on the dashboard
+5. Analyze trends and adjust your diet accordingly
 
 ## Acknowledgments
 
-- USDA FoodData Central for providing the comprehensive food database
-- Neon Database for serverless PostgreSQL hosting
-- Svelte and TailwindCSS communities for the excellent tools and documentation
+- USDA FoodData Central for providing nutrition data
+- Chart.js for powerful visualization tools
+- TailwindCSS for the sleek UI design
+- SvelteKit for the excellent developer experience

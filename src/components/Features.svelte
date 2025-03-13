@@ -1,7 +1,11 @@
-<section id="features" class="bg-white py-12 sm:py-16">
-	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-		<div class="text-center">
-			<h2 class="text-3xl font-extrabold text-gray-900">Features</h2>
+<section id="features" class="relative overflow-hidden bg-white py-16 sm:py-20">
+	<!-- Decorative background elements -->
+	<div class="absolute top-0 left-0 h-64 w-full bg-green-50 opacity-50 -skew-y-6 transform-gpu"></div>
+	
+	<div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+		<div class="text-center mb-16">
+			<span class="inline-block px-4 py-1 rounded-full bg-green-100 text-green-600 text-sm font-semibold mb-4">Key Features</span>
+			<h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl lg:text-5xl">Features</h2>
 			<p class="mx-auto mt-4 max-w-2xl text-xl text-gray-500">
 				Everything you need to track and manage your nutritional intake.
 			</p>
@@ -9,10 +13,10 @@
 
 		<div class="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
 			<div
-				class="rounded-lg bg-gray-50 p-6 shadow-md transition-shadow duration-300 hover:shadow-lg"
+				class="group rounded-xl bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-gray-100"
 			>
 				<div
-					class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600"
+					class="flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white mb-6"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -20,7 +24,7 @@
 						viewBox="0 0 24 24"
 						stroke-width="1.5"
 						stroke="currentColor"
-						class="h-6 w-6"
+						class="h-7 w-7"
 					>
 						<path
 							stroke-linecap="round"
@@ -29,17 +33,17 @@
 						/>
 					</svg>
 				</div>
-				<h3 class="mt-4 text-lg font-medium text-gray-900">Food Search</h3>
-				<p class="mt-2 text-base text-gray-500">
+				<h3 class="mt-4 text-xl font-bold text-gray-900">Food Search</h3>
+				<p class="mt-3 text-base text-gray-500">
 					Search foods from the comprehensive USDA database with accurate nutritional information.
 				</p>
 			</div>
 
 			<div
-				class="rounded-lg bg-gray-50 p-6 shadow-md transition-shadow duration-300 hover:shadow-lg"
+				class="group rounded-xl bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-gray-100"
 			>
 				<div
-					class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600"
+					class="flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white mb-6"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -47,7 +51,7 @@
 						viewBox="0 0 24 24"
 						stroke-width="1.5"
 						stroke="currentColor"
-						class="h-6 w-6"
+						class="h-7 w-7"
 					>
 						<path
 							stroke-linecap="round"
@@ -56,17 +60,17 @@
 						/>
 					</svg>
 				</div>
-				<h3 class="mt-4 text-lg font-medium text-gray-900">Track Sugar & Nutrients</h3>
-				<p class="mt-2 text-base text-gray-500">
+				<h3 class="mt-4 text-xl font-bold text-gray-900">Track Sugar & Nutrients</h3>
+				<p class="mt-3 text-base text-gray-500">
 					Monitor your daily sugar intake along with other important nutrients for a balanced diet.
 				</p>
 			</div>
 
 			<div
-				class="rounded-lg bg-gray-50 p-6 shadow-md transition-shadow duration-300 hover:shadow-lg"
+				class="group rounded-xl bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-gray-100"
 			>
 				<div
-					class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600"
+					class="flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white mb-6"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -74,7 +78,7 @@
 						viewBox="0 0 24 24"
 						stroke-width="1.5"
 						stroke="currentColor"
-						class="h-6 w-6"
+						class="h-7 w-7"
 					>
 						<path
 							stroke-linecap="round"
@@ -83,8 +87,8 @@
 						/>
 					</svg>
 				</div>
-				<h3 class="mt-4 text-lg font-medium text-gray-900">Visual Analytics</h3>
-				<p class="mt-2 text-base text-gray-500">
+				<h3 class="mt-4 text-xl font-bold text-gray-900">Visual Analytics</h3>
+				<p class="mt-3 text-base text-gray-500">
 					See your progress over time with beautiful charts and personalized insights.
 				</p>
 			</div>

@@ -8,3 +8,6 @@ export { default as FoodLogForm } from './FoodLogForm.svelte';
 export { default as FoodSearchModal } from './FoodSearchModal.svelte';
 export { default as DeleteConfirmationModal } from './DeleteConfirmationModal.svelte';
 export { default as GoalSettingsModal } from './GoalSettingsModal.svelte';
+
+// Export dashboard components
+export * from './dashboard';

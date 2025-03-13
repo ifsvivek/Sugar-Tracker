@@ -16,7 +16,3 @@
 
 	<Footer />
 </div>
-
-<style>
-	/* Any global styles here */
-</style>

@@ -6,10 +6,20 @@
 		FoodSearchModal,
 		FoodLogForm,
 		GoalSettingsModal,
-		DeleteConfirmationModal
+		DeleteConfirmationModal,
+		// Import dashboard components
+		DashboardHeader,
+		NutritionOverview,
+		FoodLogTable,
+		WeeklyTrends,
+		QuickAddFood,
+		RecentEntries,
+		SugarTip,
+		TabNavigation
 	} from '$components';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 
 	// Get user data from the server
 	$: userName = data.user?.name || 'User';
@@ -137,6 +147,7 @@
 
 	function handleGoalSuccess() {
 		window.location.reload();
+		showGoalModal = false;
 	}
 
 	// Helper functions for nutrition goals
@@ -245,247 +256,331 @@
 			return `${weekday}, ${month} ${day}${year}`;
 		}
 	}
+
+	// State management
+	let isLoading = true;
+	let showGoalModal = false;
+	let activeTab = 'today';
+
+	// Sample data (replace with actual data fetching)
+	let userData = {
+		name: 'User',
+		dailyGoals: [
+			{
+				nutrient_id: 1,
+				name: 'Sugar',
+				unit: 'g',
+				target_amount: 25,
+				is_minimum: false,
+				current: 18
+			},
+			{
+				nutrient_id: 2,
+				name: 'Carbs',
+				unit: 'g',
+				target_amount: 150,
+				is_minimum: false,
+				current: 95
+			},
+			{
+				nutrient_id: 3,
+				name: 'Protein',
+				unit: 'g',
+				target_amount: 60,
+				is_minimum: true,
+				current: 45
+			},
+			{ nutrient_id: 4, name: 'Fat', unit: 'g', target_amount: 50, is_minimum: false, current: 30 }
+		],
+		recentEntries: [
+			{ id: 1, name: 'Oatmeal', time: '7:30 AM', sugar: 1.1, calories: 158 },
+			{ id: 2, name: 'Apple', time: '10:15 AM', sugar: 10.4, calories: 72 },
+			{ id: 3, name: 'Chicken Salad', time: '12:30 PM', sugar: 3.2, calories: 350 },
+			{ id: 4, name: 'Greek Yogurt', time: '3:45 PM', sugar: 5.0, calories: 100 }
+		],
+		weeklyTrend: {
+			labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+			sugarData: [22, 19, 27, 23, 18, 12, 18],
+			calorieData: [1800, 1950, 2100, 1850, 1700, 2200, 1900]
+		},
+		todaySummary: {
+			calories: 680,
+			sugar: 18,
+			carbs: 95,
+			protein: 45,
+			fat: 30
+		}
+	};
+
+	// Quick add food form
+	let quickAddForm = {
+		foodName: '',
+		servingSize: 1,
+		mealType: 'breakfast',
+		sugarAmount: ''
+	};
+
+	function handleQuickAdd() {
+		// Implement food logging logic
+		alert('Food added: ' + quickAddForm.foodName);
+		quickAddForm.foodName = '';
+		quickAddForm.servingSize = 1;
+	}
+
+	// Calculate percentage of goal reached
+	function calculateProgress(current, target, isMinimum) {
+		if (isMinimum) {
+			return Math.min(100, Math.round((current / target) * 100));
+		} else {
+			return Math.min(100, Math.round((current / target) * 100));
+		}
+	}
+
+	// Tab switching
+	function setActiveTab(tab) {
+		activeTab = tab;
+	}
+
+	// Process food logs for weekly trends visualization with comprehensive data
+	$: weeklyTrendsData = processLogsForWeeklyTrends(foodLogs);
+
+	// Function to process food logs for weekly trends
+	function processLogsForWeeklyTrends(logs) {
+		// Get dates for past 7 days
+		const dates = [];
+		const sugarData = [];
+		const calorieData = [];
+		const carbsData = [];
+		const proteinData = [];
+		const fatData = [];
+		const fiberData = [];
+		const labels = [];
+
+		// Create date objects for the past 7 days
+		for (let i = 6; i >= 0; i--) {
+			const date = new Date();
+			date.setDate(date.getDate() - i);
+			date.setHours(0, 0, 0, 0);
+			dates.push(date);
+		}
+
+		// Format dates to match log dates (YYYY-MM-DD)
+		const formattedDates = dates.map(d => d.toISOString().split('T')[0]);
+		
+		// Create day labels (Mon, Tue, etc.)
+		labels.push(...dates.map(d => d.toLocaleDateString('en-US', { weekday: 'short' })));
+
+		// Group logs by date
+		const logsByDate = {};
+		logs.forEach(log => {
+			const date = new Date(log.consumed_at);
+			const dateStr = date.toISOString().split('T')[0];
+			
+			if (!logsByDate[dateStr]) {
+				logsByDate[dateStr] = [];
+			}
+			
+			logsByDate[dateStr].push(log);
+		});
+
+		// Calculate nutrient values for each day
+		formattedDates.forEach(date => {
+			const dayLogs = logsByDate[date] || [];
+			const daySugar = calculateNutrientTotal(dayLogs, 1);
+			const dayCarbs = calculateNutrientTotal(dayLogs, 2);
+			const dayProtein = calculateNutrientTotal(dayLogs, 3);
+			const dayFat = calculateNutrientTotal(dayLogs, 4);
+			const dayFiber = calculateNutrientTotal(dayLogs, 5);
+			
+			// Calculate calories from macronutrients
+			const dayCalories = Math.round(dayCarbs * 4 + dayProtein * 4 + dayFat * 9);
+			
+			sugarData.push(daySugar);
+			calorieData.push(dayCalories);
+			carbsData.push(dayCarbs);
+			proteinData.push(dayProtein);
+			fatData.push(dayFat);
+			fiberData.push(dayFiber);
+		});
+
+		// Get nutrient consumption by meal type using actual data
+		const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+		const mealBreakdown = mealTypes.map(type => {
+			const mealLogs = logs.filter(log => log.meal_type?.toLowerCase() === type);
+			const sugar = calculateNutrientTotal(mealLogs, 1);
+			return {
+				name: type.charAt(0).toUpperCase() + type.slice(1),
+				sugar: sugar,
+				percentage: 0 // Will calculate after summing all
+			};
+		});
+
+		// Calculate percentages for meal breakdown
+		const totalMealSugar = mealBreakdown.reduce((sum, meal) => sum + meal.sugar, 0);
+		mealBreakdown.forEach(meal => {
+			meal.percentage = totalMealSugar > 0 
+				? Math.round((meal.sugar / totalMealSugar) * 100)
+				: 0;
+		});
+		
+		// Calculate monthly trend data based on real data
+		const monthlyTrend = calculateMonthlyTrend(logs);
+
+		return {
+			labels,
+			sugarData,
+			calorieData,
+			carbsData,
+			proteinData,
+			fatData,
+			fiberData,
+			mealBreakdown,
+			monthlyTrend,
+			dailyNutrients: formattedDates.map((date, i) => ({
+				date,
+				sugar: sugarData[i],
+				carbs: carbsData[i],
+				protein: proteinData[i],
+				fat: fatData[i],
+				fiber: fiberData[i],
+				calories: calorieData[i]
+			}))
+		};
+	}
+	
+	// Calculate monthly comparison data
+	function calculateMonthlyTrend(logs) {
+		// Get dates for the current month and previous month
+		const today = new Date();
+		const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+		const previousMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+		
+		// Filter logs for current and previous month
+		const currentMonthLogs = logs.filter(log => {
+			const logDate = new Date(log.consumed_at);
+			return logDate >= currentMonthStart && logDate < today;
+		});
+		
+		const previousMonthLogs = logs.filter(log => {
+			const logDate = new Date(log.consumed_at);
+			return logDate >= previousMonthStart && logDate < currentMonthStart;
+		});
+		
+		// Calculate average sugar for both months
+		const currentMonthSugar = currentMonthLogs.length > 0 
+			? calculateNutrientTotal(currentMonthLogs, 1) / Math.max(1, calculateDaySpan(currentMonthLogs))
+			: 0;
+			
+		const previousMonthSugar = previousMonthLogs.length > 0 
+			? calculateNutrientTotal(previousMonthLogs, 1) / Math.max(1, calculateDaySpan(previousMonthLogs))
+			: 0;
+		
+		// Calculate percent change
+		const percentChange = previousMonthSugar > 0 
+			? Math.round(((previousMonthSugar - currentMonthSugar) / previousMonthSugar) * 100)
+			: 0;
+			
+		return {
+			currentMonthAvg: Math.round(currentMonthSugar * 10) / 10,
+			previousMonthAvg: Math.round(previousMonthSugar * 10) / 10,
+			percentChange,
+			hasData: currentMonthLogs.length > 0 || previousMonthLogs.length > 0
+		};
+	}
+	
+	// Helper to calculate days spanned by logs
+	function calculateDaySpan(logs) {
+		if (!logs || logs.length === 0) return 1;
+		
+		const dates = logs.map(log => new Date(log.consumed_at).toISOString().split('T')[0]);
+		const uniqueDates = new Set(dates);
+		return uniqueDates.size;
+	}
+
+	// Initialize dashboard
+	onMount(() => {
+		// Simulate data loading
+		setTimeout(() => {
+			isLoading = false;
+		}, 500);
+
+		// Here you would fetch actual user data, goals, and entries
+	});
+
+	function openGoalModal() {
+		showGoalModal = true;
+	}
 </script>
 
 <svelte:head>
-	<title>Dashboard - Sugar Tracker</title>
+	<title>Dashboard | Sugar Tracker</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50 pb-16">
-	<div class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
-		<h1 class="mb-8 text-3xl font-bold text-gray-900">Welcome, {userName}!</h1>
+<div class="min-h-screen bg-gray-50 pb-12">
+	<!-- Dashboard Header -->
+	<DashboardHeader
+		{userName}
+		{isLoading}
+		onActionClick={openGoalModal}
+		actionText="Set Nutrition Goals"
+	/>
 
-		<!-- Sugar Tracker Card -->
-		<div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-			<!-- Daily Sugar Intake - Now resets each day -->
-			<div class="rounded-lg bg-white p-6 shadow">
-				<h2 class="mb-4 text-xl font-semibold text-gray-800">Today's Sugar</h2>
-				<div class="mb-2 flex items-end">
-					<span class={`text-4xl font-bold ${sugarExceeded ? 'text-red-600' : 'text-green-600'}`}
-						>{totalSugar}g</span
-					>
-					<span class="ml-2 text-gray-500">of {sugarGoal}g</span>
-				</div>
+	<!-- Dashboard Content -->
+	<div class="mx-auto -mt-24 max-w-7xl px-4 sm:px-6 lg:px-8">
+		<!-- Main Grid Layout -->
+		<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+			<!-- Summary Cards -->
+			<div class="col-span-1 overflow-hidden rounded-xl bg-white shadow-md lg:col-span-2">
+				<TabNavigation {activeTab} onTabChange={setActiveTab} />
 
-				<!-- Progress bar -->
-				<div class="mb-2 h-2.5 w-full rounded-full bg-gray-200">
-					<div
-						class={`h-2.5 rounded-full ${sugarExceeded ? 'bg-red-600' : 'bg-green-600'}`}
-						style="width: {Math.min(sugarPercentage, 100)}%"
-					></div>
-				</div>
-				<p class="text-sm text-gray-600">
-					<span class={sugarExceeded ? 'font-medium text-red-600' : 'text-gray-600'}
-						>{sugarPercentage}% of daily goal</span
-					>
-				</p>
-			</div>
-
-			<!-- Quick Actions -->
-			<div class="rounded-lg bg-white p-6 shadow">
-				<h2 class="mb-4 text-xl font-semibold text-gray-800">Quick Actions</h2>
-				<div class="flex flex-col gap-3 sm:flex-row">
-					<button
-						class="focus:ring-opacity-50 flex-1 rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none"
-						on:click={() => (isSearchModalOpen = true)}
-					>
-						Log Food
-					</button>
-					<button
-						class="focus:ring-opacity-50 flex-1 rounded border border-green-600 px-4 py-2 text-green-600 hover:bg-green-50 focus:ring-2 focus:ring-green-500 focus:outline-none"
-						on:click={openGoalSettings}
-					>
-						Add Goal
-					</button>
-				</div>
-			</div>
-
-			<!-- Nutrition Tip -->
-			<div class="rounded-lg bg-white p-6 shadow">
-				<h2 class="mb-4 text-xl font-semibold text-gray-800">Nutrition Tip</h2>
-				<p class="text-gray-600">
-					Try replacing sugary drinks with water or unsweetened tea to reduce your daily sugar
-					intake.
-				</p>
-			</div>
-		</div>
-
-		<!-- Nutrition Breakdown - Now shows today's values only -->
-		<div class="mb-8 overflow-x-auto rounded-lg bg-white p-6 shadow">
-			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-xl font-semibold text-gray-800">Nutrition Breakdown</h2>
-				<div class="text-sm font-medium text-green-600">Resets daily at midnight</div>
-			</div>
-			<div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-				{#each nutritionData as item}
-					<div class="rounded-md border border-gray-200 p-4">
-						<h3 class="text-sm font-medium text-gray-500">{item.name}</h3>
-						<div class="mt-1 flex items-end">
-							<span
-								class={`text-2xl font-semibold ${item.exceeded ? 'text-red-600' : 'text-gray-800'}`}
-								>{item.value}</span
-							>
-							<span class="ml-1 text-sm text-gray-500">/ {item.goal}</span>
-						</div>
-						<div class="mt-2 h-1.5 w-full rounded-full bg-gray-200">
-							<div
-								class={`h-1.5 rounded-full ${item.exceeded ? 'bg-red-600' : 'bg-green-600'}`}
-								style="width: {Math.min(item.percentage, 100)}%"
-							></div>
-						</div>
-						{#if item.exceeded}
-							<p class="mt-1 text-xs text-red-600">
-								{item.percentage}% of goal
-							</p>
-						{/if}
+				{#if isLoading}
+					<div class="flex h-64 items-center justify-center">
+						<div
+							class="h-10 w-10 animate-spin rounded-full border-4 border-green-200 border-t-green-600"
+						></div>
 					</div>
-				{/each}
+				{:else if activeTab === 'today'}
+					<NutritionOverview {nutritionData} {totalCarbs} {totalProtein} {totalFat} />
+					<FoodLogTable {todayLogs} {getNutrientAmount} />
+				{:else if activeTab === 'trends'}
+					<WeeklyTrends
+						weeklyData={weeklyTrendsData}
+						{foodLogs}
+						{totalSugar}
+						{sugarGoal}
+						{totalCarbs}
+						{totalProtein}
+						{totalFat}
+						{totalFiber}
+					/>
+				{/if}
 			</div>
-		</div>
 
-		<!-- Recent Meals -->
-		<div class="mb-8 rounded-lg bg-white p-6 shadow">
-			<h2 class="mb-4 text-xl font-semibold text-gray-800">Recent Meals</h2>
+			<!-- Quick Add & Recent Entries -->
+			<div class="col-span-1 space-y-6">
+				<!-- Quick Add Food Card -->
+				<QuickAddFood
+					onSubmit={handleQuickAdd}
+					onSearchClick={() => (isSearchModalOpen = true)}
+					{quickAddForm}
+				/>
 
-			{#if recentDates.length > 0}
-				{#each recentDates as dateStr}
-					<div class="mb-6">
-						<h3 class="mb-3 font-medium text-gray-700">{formatDate(dateStr)}</h3>
+				<!-- Recent Entries -->
+				<RecentEntries
+					{foodLogs}
+					{isLoading}
+					onAddClick={() => (isSearchModalOpen = true)}
+					{getNutrientAmount}
+				/>
 
-						<!-- Desktop view: Table -->
-						<div class="hidden md:block">
-							<div class="overflow-x-auto">
-								<table class="min-w-full divide-y divide-gray-200">
-									<thead>
-										<tr>
-											<th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Meal</th>
-											<th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Time</th>
-											<th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Food</th>
-											<th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Serving</th>
-											<th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Sugar</th>
-											<th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Carbs</th>
-											<th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Protein</th>
-											<th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Fat</th>
-											<th class="px-4 py-3 text-left text-sm font-medium text-gray-500"></th>
-										</tr>
-									</thead>
-									<tbody class="divide-y divide-gray-200">
-										{#each mealsByDate[dateStr] as meal}
-											<tr>
-												<td class="px-4 py-3 text-sm text-gray-900">{meal.name}</td>
-												<td class="px-4 py-3 text-sm text-gray-600">{meal.time}</td>
-												<td class="px-4 py-3 text-sm text-gray-900">
-													{meal.food}
-													{#if meal.brand}
-														<div class="text-xs text-gray-500">{meal.brand}</div>
-													{/if}
-												</td>
-												<td class="px-4 py-3 text-sm text-gray-900">{meal.servingSize}</td>
-												<td class="px-4 py-3 text-sm text-gray-900">{meal.sugar.toFixed(1)}g</td>
-												<td class="px-4 py-3 text-sm text-gray-900">{meal.carbs.toFixed(1)}g</td>
-												<td class="px-4 py-3 text-sm text-gray-900">{meal.protein.toFixed(1)}g</td>
-												<td class="px-4 py-3 text-sm text-gray-900">{meal.fat.toFixed(1)}g</td>
-												<td class="px-4 py-3 text-right text-sm">
-													<button
-														class="text-red-600 hover:text-red-800"
-														on:click={() => confirmDeleteMeal(meal)}
-													>
-														<span class="sr-only">Delete</span>
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															class="h-5 w-5"
-															fill="none"
-															viewBox="0 0 24 24"
-															stroke="currentColor"
-														>
-															<path
-																stroke-linecap="round"
-																stroke-linejoin="round"
-																stroke-width="2"
-																d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-															/>
-														</svg>
-													</button>
-												</td>
-											</tr>
-										{/each}
-									</tbody>
-								</table>
-							</div>
-						</div>
-
-						<!-- Mobile view: Cards -->
-						<div class="md:hidden">
-							<div class="space-y-4">
-								{#each mealsByDate[dateStr] as meal}
-									<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-										<div class="mb-2 flex justify-between">
-											<div>
-												<span class="font-medium text-gray-900">{meal.name}</span>
-												<span class="ml-2 text-sm text-gray-600">{meal.time}</span>
-											</div>
-											<button
-												class="text-red-600 hover:text-red-800"
-												on:click={() => confirmDeleteMeal(meal)}
-												aria-label="Delete meal"
-											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													class="h-5 w-5"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke="currentColor"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														stroke-width="2"
-														d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-													/>
-												</svg>
-											</button>
-										</div>
-
-										<div class="mb-3">
-											<p class="font-medium text-gray-900">{meal.food}</p>
-											{#if meal.brand}
-												<p class="text-sm text-gray-500">{meal.brand}</p>
-											{/if}
-											<p class="text-sm text-gray-600">Serving size: {meal.servingSize}</p>
-										</div>
-
-										<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-											<div class="rounded bg-gray-50 px-3 py-2">
-												<p class="text-xs text-gray-500">Sugar</p>
-												<p class="font-medium">{meal.sugar.toFixed(1)}g</p>
-											</div>
-											<div class="rounded bg-gray-50 px-3 py-2">
-												<p class="text-xs text-gray-500">Carbs</p>
-												<p class="font-medium">{meal.carbs.toFixed(1)}g</p>
-											</div>
-											<div class="rounded bg-gray-50 px-3 py-2">
-												<p class="text-xs text-gray-500">Protein</p>
-												<p class="font-medium">{meal.protein.toFixed(1)}g</p>
-											</div>
-											<div class="rounded bg-gray-50 px-3 py-2">
-												<p class="text-xs text-gray-500">Fat</p>
-												<p class="font-medium">{meal.fat.toFixed(1)}g</p>
-											</div>
-										</div>
-									</div>
-								{/each}
-							</div>
-						</div>
-					</div>
-				{/each}
-			{:else}
-				<p class="text-gray-600">No meals recorded. Start tracking to see your data!</p>
-			{/if}
+				<!-- Tips Card -->
+				<SugarTip {totalSugar} {sugarGoal} />
+			</div>
 		</div>
 	</div>
 </div>
 
-<!-- Existing Modals -->
+<!-- Modals - ensure no duplicates -->
 <FoodSearchModal
 	isOpen={isSearchModalOpen}
 	on:close={() => (isSearchModalOpen = false)}
@@ -499,15 +594,18 @@
 	on:success={handleLogSuccess}
 />
 
-<!-- Goal Settings Modal -->
+<!-- Goal Settings Modal - removed duplicate -->
 <GoalSettingsModal
-	isOpen={isGoalSettingsModalOpen}
+	isOpen={showGoalModal || isGoalSettingsModalOpen}
 	currentGoals={goals}
-	on:close={() => (isGoalSettingsModalOpen = false)}
+	on:close={() => {
+		showGoalModal = false;
+		isGoalSettingsModalOpen = false;
+	}}
 	on:success={handleGoalSuccess}
 />
 
-<!-- Use the DeleteConfirmationModal component instead of inline modal -->
+<!-- Delete Confirmation Modal -->
 <DeleteConfirmationModal
 	isOpen={isDeleteConfirmOpen}
 	item={mealToDelete}
