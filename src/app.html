@@ -1,12 +1,38 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+
+	<!-- Theme Color -->
+	<meta name="theme-color" content="#16A34A" />
+	<meta name="msapplication-TileColor" content="#16A34A" />
+
+	<!-- SEO Meta Tags -->
+	<meta name="description"
+		content="Track and monitor your daily sugar intake with Sugar Tracker. A simple and effective way to maintain a healthy lifestyle through nutrition awareness." />
+	<meta name="keywords" content="sugar tracker, nutrition, health, diet tracking, sugar intake, healthy lifestyle" />
+	<meta name="author" content="Sugar Tracker" />
+
+	<!-- Open Graph Tags -->
+	<meta property="og:title" content="Sugar Tracker - Monitor Your Sugar Intake" />
+	<meta property="og:description" content="Track and monitor your daily sugar intake with Sugar Tracker. A simple and effective way to maintain a healthy lifestyle." />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content="%sveltekit.assets%/og-image.png" />
+
+	<!-- Twitter Card Tags -->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Sugar Tracker - Monitor Your Sugar Intake" />
+	<meta name="twitter:description" content="Track and monitor your daily sugar intake with Sugar Tracker. A simple and effective way to maintain a healthy lifestyle." />
+	<meta name="twitter:image" content="%sveltekit.assets%/og-image.png" />
+
+	%sveltekit.head%
+</head>
+
+<body data-sveltekit-preload-data="hover" class="min-h-screen bg-gray-50">
+	<div style="display: contents">%sveltekit.body%</div>
+</body>
+
 </html>
