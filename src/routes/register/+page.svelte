@@ -31,7 +31,8 @@
 
 			if (response.ok && result.success) {
 				success = 'Account created successfully!';
-				setTimeout(() => goto('/dashboard'), 1000);
+				// Redirect to root page instead of dashboard since the user is now logged in
+				setTimeout(() => goto('/'), 1000);
 			} else {
 				error = result.message || 'Registration failed. Please try again.';
 			}

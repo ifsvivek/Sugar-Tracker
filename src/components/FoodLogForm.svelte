@@ -55,22 +55,25 @@
 
 {#if isOpen && food}
 	<div class="fixed inset-0 z-50 overflow-y-auto">
-		<div class="flex min-h-screen items-center justify-center px-4 py-12 text-center sm:p-0">
+		<div
+			class="flex min-h-screen items-center justify-center px-4 py-6 text-center sm:p-0 md:py-12"
+		>
 			<div
 				class="bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity"
 				on:click={close}
+				
 			></div>
 
 			<div
 				class="relative inline-block w-full max-w-md transform overflow-hidden rounded-lg bg-white px-4 py-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:p-6 sm:align-middle"
 			>
-				<div class="absolute top-4 right-4">
+				<div class="absolute top-3 right-3">
 					<button
 						on:click={close}
-						class="rounded-full bg-white p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
+						class="rounded-full bg-white p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:ring-2 focus:ring-green-500 focus:outline-none active:bg-gray-200"
 					>
 						<span class="sr-only">Close</span>
-						<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -81,8 +84,8 @@
 					</button>
 				</div>
 
-				<div class="mb-6">
-					<h3 class="text-xl font-medium text-gray-900">Log Food</h3>
+				<div class="mb-5">
+					<h3 class="text-lg font-medium text-gray-900">Log Food</h3>
 					<div class="mt-3 rounded-md bg-green-50 p-3">
 						<h4 class="font-medium text-gray-900">{food.description}</h4>
 						{#if food.brandName}
@@ -91,7 +94,7 @@
 					</div>
 				</div>
 
-				<form on:submit|preventDefault={handleSubmit} class="space-y-5">
+				<form on:submit|preventDefault={handleSubmit} class="space-y-4">
 					<div>
 						<label for="servingSize" class="block text-sm font-medium text-gray-700"
 							>Serving Size</label
@@ -134,7 +137,7 @@
 						<button
 							type="button"
 							on:click={close}
-							class="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
+							class="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none active:bg-gray-100"
 							disabled={isSubmitting}
 						>
 							Cancel
@@ -142,7 +145,7 @@
 						<button
 							type="submit"
 							disabled={isSubmitting}
-							class="inline-flex justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
+							class="inline-flex justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none active:bg-green-800"
 						>
 							{isSubmitting ? 'Saving...' : 'Save'}
 						</button>

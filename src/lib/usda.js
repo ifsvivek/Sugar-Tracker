@@ -54,3 +54,67 @@ export async function getFoodDetails(fdcId) {
 
 	return response.json();
 }
+
+export function processUsdaNutrients(foodData) {
+    if (!foodData || !foodData.foodNutrients) {
+        return [];
+    }
+
+    const nutrientMappings = {
+        // Sugar (multiple possible IDs)
+        '269': 1,    // Sugars, total
+        '539': 1,    // Sugars, added
+        '2000': 1,   // Sugars
+        
+        // Carbohydrates
+        '205': 2,    // Carbohydrates, total
+        '1005': 2,   // Carbohydrate, by difference
+        
+        // Protein
+        '203': 3,    // Protein
+        '1003': 3,   // Protein
+        
+        // Fat
+        '204': 4,    // Total Fat
+        '1004': 4,   // Total lipid (fat)
+        
+        // Fiber
+        '291': 5,    // Fiber, total dietary
+        '1079': 5,   // Fiber, total dietary
+        
+        // Sodium
+        '307': 6,    // Sodium, Na
+        '1093': 6    // Sodium
+    };
+
+    return foodData.foodNutrients
+        .filter(nutrient => {
+            const id = nutrient.nutrient?.number || nutrient.number || 
+                      nutrient.nutrientNumber?.toString() || '';
+            return nutrientMappings[id] !== undefined;
+        })
+        .map(nutrient => {
+            const id = nutrient.nutrient?.number || nutrient.number || 
+                      nutrient.nutrientNumber?.toString() || '';
+            const nutrientId = nutrientMappings[id];
+            const amount = nutrient.amount || nutrient.value || 0;
+
+            return {
+                nutrient_id: nutrientId,
+                amount: parseFloat(amount),
+                unit: getUnitForNutrient(nutrientId)
+            };
+        });
+}
+
+function getUnitForNutrient(nutrientId) {
+    const units = {
+        1: 'g',  // Sugar
+        2: 'g',  // Carbs
+        3: 'g',  // Protein
+        4: 'g',  // Fat
+        5: 'g',  // Fiber
+        6: 'mg', // Sodium
+    };
+    return units[nutrientId] || 'g';
+}

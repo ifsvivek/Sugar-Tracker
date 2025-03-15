@@ -1,10 +1,15 @@
 <section id="features" class="relative overflow-hidden bg-white py-16 sm:py-20">
 	<!-- Decorative background elements -->
-	<div class="absolute top-0 left-0 h-64 w-full bg-green-50 opacity-50 -skew-y-6 transform-gpu"></div>
-	
+	<div
+		class="absolute top-0 left-0 h-64 w-full -skew-y-6 transform-gpu bg-green-50 opacity-50"
+	></div>
+
 	<div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-		<div class="text-center mb-16">
-			<span class="inline-block px-4 py-1 rounded-full bg-green-100 text-green-600 text-sm font-semibold mb-4">Key Features</span>
+		<div class="mb-16 text-center">
+			<span
+				class="mb-4 inline-block rounded-full bg-green-100 px-4 py-1 text-sm font-semibold text-green-600"
+				>Key Features</span
+			>
 			<h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl lg:text-5xl">Features</h2>
 			<p class="mx-auto mt-4 max-w-2xl text-xl text-gray-500">
 				Everything you need to track and manage your nutritional intake.
@@ -13,10 +18,10 @@
 
 		<div class="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
 			<div
-				class="group rounded-xl bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-gray-100"
+				class="group rounded-xl border border-gray-100 bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
 			>
 				<div
-					class="flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white mb-6"
+					class="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -40,10 +45,10 @@
 			</div>
 
 			<div
-				class="group rounded-xl bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-gray-100"
+				class="group rounded-xl border border-gray-100 bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
 			>
 				<div
-					class="flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white mb-6"
+					class="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -67,10 +72,10 @@
 			</div>
 
 			<div
-				class="group rounded-xl bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-gray-100"
+				class="group rounded-xl border border-gray-100 bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
 			>
 				<div
-					class="flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white mb-6"
+					class="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

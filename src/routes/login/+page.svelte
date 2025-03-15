@@ -1,35 +1,62 @@
 <script>
+	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-
+	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
+	
+	// Get redirect URL from query parameter
+	$: redirectTo = $page.url.searchParams.get('redirectTo') || '/';
+	
 	let email = '';
 	let password = '';
-	let errorMessage = '';
-	let isLoading = false;
-
-	async function handleSubmit() {
-		errorMessage = '';
-		isLoading = true;
-
+	let rememberMe = false;
+	let isSubmitting = false;
+	let error = null;
+	
+	// Check if already logged in
+	onMount(() => {
+		if ($page.data.isAuthenticated && browser) {
+			goto(redirectTo);
+		}
+	});
+	
+	async function handleLogin() {
+		if (!email || !password) {
+			error = 'Please enter both email and password';
+			return;
+		}
+		
+		isSubmitting = true;
+		error = null;
+		
 		try {
 			const response = await fetch('/api/auth/login', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, password })
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					email,
+					password,
+					rememberMe,
+					redirectTo
+				})
 			});
-
-			const result = await response.json();
-
-			if (result.success) {
-				// Redirect to dashboard after successful login
-				goto('/dashboard');
-			} else {
-				errorMessage = result.error || 'Login failed';
+			
+			const data = await response.json();
+			
+			if (!response.ok || !data.success) {
+				throw new Error(data.error || 'Login failed');
 			}
-		} catch (error) {
-			console.error('Login error:', error);
-			errorMessage = 'An error occurred during login';
+			
+			// Successful login, navigate to redirected page or dashboard
+			if (browser) {
+				window.location.href = data.redirectTo || '/';
+			}
+		} catch (err) {
+			error = err.message;
 		} finally {
-			isLoading = false;
+			isSubmitting = false;
 		}
 	}
 </script>
@@ -44,10 +71,10 @@
 			<div class="p-8">
 				<h1 class="mb-6 text-center text-3xl font-bold text-gray-800">Login to Sugar Tracker</h1>
 
-				<form on:submit|preventDefault={handleSubmit}>
-					{#if errorMessage}
+				<form on:submit|preventDefault={handleLogin}>
+					{#if error}
 						<div class="mb-6 rounded-md bg-red-100 p-4 text-center text-red-700">
-							{errorMessage}
+							{error}
 						</div>
 					{/if}
 
@@ -75,12 +102,22 @@
 						/>
 					</div>
 
+					<div class="mb-6">
+						<label for="rememberMe" class="mb-2 block font-medium text-gray-700">Remember Me</label>
+						<input
+							type="checkbox"
+							id="rememberMe"
+							bind:checked={rememberMe}
+							class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring focus:ring-offset-0 focus:ring-green-500"
+						/>
+					</div>
+
 					<button
 						type="submit"
-						disabled={isLoading}
+						disabled={isSubmitting}
 						class="focus:ring-opacity-50 w-full rounded-lg bg-green-600 px-4 py-3 font-medium text-white shadow-lg transition hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
 					>
-						{isLoading ? 'Logging in...' : 'Login'}
+						{isSubmitting ? 'Logging in...' : 'Login'}
 					</button>
 
 					<div class="mt-8 text-center">

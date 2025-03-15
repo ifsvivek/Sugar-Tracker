@@ -16,6 +16,12 @@
 		hasData: false
 	};
 
+	// Check if we have data to display
+	$: hasDailyData = dailyNutrients && dailyNutrients.length > 0 && 
+		dailyNutrients.some(day => day.sugar > 0);
+	$: hasTodayData = totalSugar > 0;
+	$: hasComparisonData = monthlyTrend && monthlyTrend.hasData;
+
 	// Initialize local variables for month data that won't cause circular references
 	let localCurrentMonthAvg = 0;
 	let localPreviousMonthAvg = 0;
@@ -288,21 +294,29 @@
 		<h4 class="mb-4 text-sm font-medium text-gray-700">Monthly Sugar Comparison</h4>
 
 		<div class="mb-4 h-64">
-			<ChartJsWrapper
-				type="bar"
-				data={comparisonChartData}
-				options={comparisonChartOptions}
-				height="100%"
-			/>
+			{#if hasComparisonData || hasDailyData}
+				<ChartJsWrapper
+					type="bar"
+					data={comparisonChartData}
+					options={comparisonChartOptions}
+					height="100%"
+				/>
+			{:else}
+				<div class="flex h-full w-full items-center justify-center">
+					<p class="text-gray-400">No comparison data available yet</p>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Results summary -->
-		<div class="mt-6 rounded-lg bg-green-50 p-3 text-center">
-			<p class="text-sm text-green-800">
-				<span class="font-medium">{localPercentChange}% decrease</span> in sugar consumption compared
-				to last month
-			</p>
-		</div>
+		{#if hasComparisonData || hasDailyData}
+			<div class="mt-6 rounded-lg bg-green-50 p-3 text-center">
+				<p class="text-sm text-green-800">
+					<span class="font-medium">{localPercentChange}% decrease</span> in sugar consumption compared
+					to last month
+				</p>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Daily Progress Line Chart -->
@@ -310,13 +324,19 @@
 		<h4 class="mb-4 text-sm font-medium text-gray-700">Daily Sugar Tracking</h4>
 
 		<div class="h-64">
-			<ChartJsWrapper
-				type="line"
-				data={progressChartData}
-				options={progressChartOptions}
-				height="100%"
-				updateKey={sugarGoal}
-			/>
+			{#if hasDailyData}
+				<ChartJsWrapper
+					type="line"
+					data={progressChartData}
+					options={progressChartOptions}
+					height="100%"
+					updateKey={sugarGoal}
+				/>
+			{:else}
+				<div class="flex h-full w-full items-center justify-center">
+					<p class="text-gray-400">No daily sugar tracking data available</p>
+				</div>
+			{/if}
 		</div>
 	</div>
 
@@ -324,55 +344,61 @@
 	<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 		<h4 class="mb-4 text-sm font-medium text-gray-700">Today's Goal Progress</h4>
 
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-			<!-- Semi-circle gauge -->
-			<div class="flex flex-col items-center justify-center">
-				<div class="h-48 w-48">
-					<ChartJsWrapper
-						type="doughnut"
-						data={goalChartData}
-						options={goalChartOptions}
-						height="100%"
-						updateKey={totalSugar}
-					/>
+		{#if hasTodayData}
+			<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+				<!-- Semi-circle gauge -->
+				<div class="flex flex-col items-center justify-center">
+					<div class="h-48 w-48">
+						<ChartJsWrapper
+							type="doughnut"
+							data={goalChartData}
+							options={goalChartOptions}
+							height="100%"
+							updateKey={totalSugar}
+						/>
+					</div>
+
+					<p
+						class={`mt-2 text-sm font-medium ${totalSugar <= sugarGoal ? 'text-green-600' : 'text-red-600'}`}
+					>
+						{totalSugar <= sugarGoal
+							? `${Math.round((totalSugar / sugarGoal) * 100)}% of daily goal`
+							: `${Math.round((totalSugar / sugarGoal) * 100)}% of daily goal (exceeded)`}
+					</p>
 				</div>
 
-				<p
-					class={`mt-2 text-sm font-medium ${totalSugar <= sugarGoal ? 'text-green-600' : 'text-red-600'}`}
-				>
-					{totalSugar <= sugarGoal
-						? `${Math.round((totalSugar / sugarGoal) * 100)}% of daily goal`
-						: `${Math.round((totalSugar / sugarGoal) * 100)}% of daily goal (exceeded)`}
-				</p>
-			</div>
+				<!-- Goal details -->
+				<div class="flex flex-col justify-center">
+					<div class="space-y-4">
+						<div>
+							<p class="text-sm text-gray-500">Current Intake</p>
+							<p class="text-2xl font-medium">{totalSugar}g</p>
+						</div>
 
-			<!-- Goal details -->
-			<div class="flex flex-col justify-center">
-				<div class="space-y-4">
-					<div>
-						<p class="text-sm text-gray-500">Current Intake</p>
-						<p class="text-2xl font-medium">{totalSugar}g</p>
-					</div>
+						<div>
+							<p class="text-sm text-gray-500">Daily Goal</p>
+							<p class="text-2xl font-medium">{sugarGoal}g</p>
+						</div>
 
-					<div>
-						<p class="text-sm text-gray-500">Daily Goal</p>
-						<p class="text-2xl font-medium">{sugarGoal}g</p>
-					</div>
-
-					<div>
-						<p class="text-sm text-gray-500">
-							{totalSugar <= sugarGoal ? 'Remaining' : 'Exceeded By'}
-						</p>
-						<p
-							class={`text-2xl font-medium ${totalSugar <= sugarGoal ? 'text-green-600' : 'text-red-600'}`}
-						>
-							{totalSugar <= sugarGoal
-								? Math.max(sugarGoal - totalSugar, 0)
-								: totalSugar - sugarGoal}g
-						</p>
+						<div>
+							<p class="text-sm text-gray-500">
+								{totalSugar <= sugarGoal ? 'Remaining' : 'Exceeded By'}
+							</p>
+							<p
+								class={`text-2xl font-medium ${totalSugar <= sugarGoal ? 'text-green-600' : 'text-red-600'}`}
+							>
+								{totalSugar <= sugarGoal
+									? Math.max(sugarGoal - totalSugar, 0)
+									: totalSugar - sugarGoal}g
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		{:else}
+			<div class="flex h-40 w-full items-center justify-center">
+				<p class="text-gray-400">Log today's food to see goal progress</p>
+			</div>
+		{/if}
 	</div>
 </div>

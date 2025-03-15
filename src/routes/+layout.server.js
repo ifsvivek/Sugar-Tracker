@@ -7,14 +7,18 @@ const pool = createPool({
 	connectionString: POSTGRES_URL
 });
 
-export async function load({ cookies }) {
+export async function load({ cookies, url, locals }) {
 	const authToken = cookies.get('authToken');
 	const isAuth = isAuthenticated(cookies);
+	
+	// Track the requested URL for proper redirects after login
+	const requestedPath = url.pathname;
 
-	// If not authenticated, just return the auth status
+	// If not authenticated, just return the auth status and requested path
 	if (!isAuth) {
 		return {
-			isAuthenticated: false
+			isAuthenticated: false,
+			requestedPath
 		};
 	}
 
@@ -28,9 +32,14 @@ export async function load({ cookies }) {
 			]);
 
 			if (result.rows.length > 0) {
+				// Set user in locals for server-side access
+				const userData = result.rows[0];
+				locals.user = userData;
+				
 				return {
 					isAuthenticated: true,
-					user: result.rows[0]
+					user: userData,
+					requestedPath
 				};
 			}
 		}
@@ -40,6 +49,7 @@ export async function load({ cookies }) {
 
 	// Default return if something goes wrong
 	return {
-		isAuthenticated: isAuth
+		isAuthenticated: isAuth,
+		requestedPath
 	};
 }

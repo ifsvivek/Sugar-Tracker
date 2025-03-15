@@ -9,18 +9,25 @@
 	// Real weekly nutrient data
 	export let weeklyNutrients = [];
 
+	// Check if we have enough data to display
+	$: hasNutrientData = totalCarbs > 0 || totalProtein > 0 || totalFat > 0;
+	$: hasWeeklyData = weeklyNutrients && weeklyNutrients.length > 1 && weeklyNutrients.some(day => 
+		day.carbs > 0 || day.protein > 0 || day.fat > 0
+	);
+
 	// Create radar chart with weekly nutrient trends
 	$: weeklyRadarData = {
-		labels: weeklyNutrients.length > 0 
-			? weeklyNutrients.map((day, i) => {
-				const date = new Date(day.date);
-				return date.toLocaleDateString('en-US', { weekday: 'short' });
-			})
-			: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+		labels:
+			weeklyNutrients.length > 0
+				? weeklyNutrients.map((day, i) => {
+						const date = new Date(day.date);
+						return date.toLocaleDateString('en-US', { weekday: 'short' });
+					})
+				: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
 		datasets: [
 			{
 				label: 'Carbs (g)',
-				data: weeklyNutrients.map(day => day.carbs),
+				data: weeklyNutrients.map((day) => day.carbs),
 				backgroundColor: 'rgba(59, 130, 246, 0.2)',
 				borderColor: 'rgb(37, 99, 235)',
 				pointBackgroundColor: 'rgb(37, 99, 235)',
@@ -30,7 +37,7 @@
 			},
 			{
 				label: 'Protein (g)',
-				data: weeklyNutrients.map(day => day.protein),
+				data: weeklyNutrients.map((day) => day.protein),
 				backgroundColor: 'rgba(16, 185, 129, 0.2)',
 				borderColor: 'rgb(5, 150, 105)',
 				pointBackgroundColor: 'rgb(5, 150, 105)',
@@ -40,7 +47,7 @@
 			},
 			{
 				label: 'Fat (g)',
-				data: weeklyNutrients.map(day => day.fat),
+				data: weeklyNutrients.map((day) => day.fat),
 				backgroundColor: 'rgba(139, 92, 246, 0.2)',
 				borderColor: 'rgb(109, 40, 217)',
 				pointBackgroundColor: 'rgb(109, 40, 217)',
@@ -50,7 +57,7 @@
 			}
 		]
 	};
-	
+
 	$: weeklyRadarOptions = {
 		responsive: true,
 		maintainAspectRatio: false,
@@ -283,26 +290,34 @@
 		<h4 class="mb-6 text-center text-gray-700">Macronutrient Distribution</h4>
 
 		<div class="h-60">
-			<ChartJsWrapper
-				type="doughnut"
-				data={nutrientChartData}
-				options={nutrientChartOptions}
-				height="100%"
-				updateKey={totalNutrients}
-			/>
+			{#if hasNutrientData}
+				<ChartJsWrapper
+					type="doughnut"
+					data={nutrientChartData}
+					options={nutrientChartOptions}
+					height="100%"
+					updateKey={totalNutrients}
+				/>
+			{:else}
+				<div class="flex h-full w-full items-center justify-center">
+					<p class="text-gray-400">No macronutrient data available</p>
+				</div>
+			{/if}
 		</div>
 
-		<div class="mt-4 text-center text-sm">
-			<span class="font-medium">Total:</span>
-			{totalNutrients}g
-		</div>
+		{#if hasNutrientData}
+			<div class="mt-4 text-center text-sm">
+				<span class="font-medium">Total:</span>
+				{totalNutrients}g
+			</div>
+		{/if}
 	</div>
 
 	<!-- Weekly Nutrient Radar Chart -->
 	<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 		<h4 class="mb-4 text-sm font-medium text-gray-700">Weekly Nutrient Pattern</h4>
 		<div class="h-72">
-			{#if weeklyNutrients && weeklyNutrients.length > 1}
+			{#if hasWeeklyData}
 				<ChartJsWrapper
 					type="radar"
 					data={weeklyRadarData}
@@ -322,13 +337,19 @@
 	<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 		<h4 class="mb-4 text-sm font-medium text-gray-700">Recommended Balance</h4>
 		<div class="h-44">
-			<ChartJsWrapper
-				type="bar"
-				data={balanceData}
-				options={balanceOptions}
-				height="100%"
-				updateKey={carbsPercent + proteinPercent + fatPercent}
-			/>
+			{#if hasNutrientData}
+				<ChartJsWrapper
+					type="bar"
+					data={balanceData}
+					options={balanceOptions}
+					height="100%"
+					updateKey={carbsPercent + proteinPercent + fatPercent}
+				/>
+			{:else}
+				<div class="flex h-full w-full items-center justify-center">
+					<p class="text-gray-400">Log your meals to see macronutrient balance</p>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

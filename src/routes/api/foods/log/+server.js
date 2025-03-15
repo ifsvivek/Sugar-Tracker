@@ -3,6 +3,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { verifyToken } from '$lib/auth';
 import { USDA_API_KEY } from '$env/static/private';
+import { processUsdaNutrients } from '$lib/usda';
 
 const pool = createPool({
 	connectionString: POSTGRES_URL
@@ -59,29 +60,13 @@ export async function POST({ request, cookies, fetch }) {
 
 				// Extract and insert nutrients
 				if (foodDetails.foodNutrients) {
-					const nutrientMap = {
-						'Sugars, total including NLEA': 1,
-						'Sugars, added': 1,
-						'Sugars, Total': 1,
-						'Total Sugars': 1,
-						'Carbohydrate, by difference': 2,
-						Protein: 3,
-						'Total lipid (fat)': 4,
-						'Fatty acids, total saturated': 4,
-						'Fiber, total dietary': 5,
-						'Sodium, Na': 6
-					};
+					const processedNutrients = processUsdaNutrients(foodDetails);
 
-					for (const nutrient of foodDetails.foodNutrients) {
-						const nutrientName = nutrient.nutrientName || nutrient.nutrient?.name;
-						const nutrientId = nutrientMap[nutrientName];
-
-						if (nutrientId && nutrient.amount) {
-							await client.query(
-								'INSERT INTO food_nutrients (food_item_id, nutrient_id, amount) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-								[foodItemId, nutrientId, nutrient.amount]
-							);
-						}
+					for (const nutrient of processedNutrients) {
+						await client.query(
+							'INSERT INTO food_nutrients (food_item_id, nutrient_id, amount) VALUES ($1, $2, $3) ON CONFLICT (food_item_id, nutrient_id) DO UPDATE SET amount = $3',
+							[foodItemId, nutrient.nutrient_id, nutrient.amount]
+						);
 					}
 				}
 			}

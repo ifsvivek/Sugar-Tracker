@@ -1,58 +1,47 @@
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { verifyToken } from '$lib/auth';
 
 const pool = createPool({
-	connectionString: POSTGRES_URL
+    connectionString: POSTGRES_URL
 });
 
 export async function DELETE({ params, cookies }) {
-	// Verify authentication
-	const token = cookies.get('authToken');
-	if (!token) {
-		return json({ error: 'Unauthorized' }, { status: 401 });
-	}
+    const authToken = cookies.get('authToken');
+    
+    if (!authToken) {
+        throw error(401, 'Authentication required');
+    }
 
-	try {
-		const decoded = verifyToken(token);
-		const userId = decoded.userId;
-		const logId = params.id;
+    try {
+        const decoded = verifyToken(authToken);
+        if (!decoded || !decoded.userId) {
+            throw error(401, 'Invalid authentication token');
+        }
 
-		if (!logId) {
-			return json({ error: 'Missing log ID' }, { status: 400 });
-		}
+        const logId = params.id;
+        const userId = decoded.userId;
 
-		// Delete the log
-		const client = await pool.connect();
-		try {
-			await client.query('BEGIN');
+        // First verify the log belongs to the user
+        const checkQuery = 'SELECT user_id FROM food_logs WHERE id = $1';
+        const checkResult = await pool.query(checkQuery, [logId]);
 
-			// Check if the log belongs to the user
-			const checkResult = await client.query(
-				'SELECT * FROM food_logs WHERE id = $1 AND user_id = $2',
-				[logId, userId]
-			);
+        if (checkResult.rows.length === 0) {
+            throw error(404, 'Log entry not found');
+        }
 
-			if (checkResult.rows.length === 0) {
-				return json({ error: 'Log not found or not authorized' }, { status: 404 });
-			}
+        if (checkResult.rows[0].user_id !== userId) {
+            throw error(403, 'Unauthorized to delete this log');
+        }
 
-			// Delete the log
-			await client.query('DELETE FROM food_logs WHERE id = $1', [logId]);
+        // Delete the log
+        const deleteQuery = 'DELETE FROM food_logs WHERE id = $1 AND user_id = $2';
+        await pool.query(deleteQuery, [logId, userId]);
 
-			await client.query('COMMIT');
-
-			return json({ success: true, message: 'Food log deleted successfully' });
-		} catch (error) {
-			await client.query('ROLLBACK');
-			console.error('Database error:', error);
-			throw error;
-		} finally {
-			client.release();
-		}
-	} catch (error) {
-		console.error('Error deleting food log:', error);
-		return json({ error: error.message || 'Failed to delete food log' }, { status: 500 });
-	}
+        return json({ success: true });
+    } catch (err) {
+        console.error('Error deleting food log:', err);
+        throw error(500, 'Failed to delete food log');
+    }
 }
